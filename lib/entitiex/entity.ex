@@ -48,11 +48,12 @@ defmodule Entitiex.Entity do
         do: Enum.map(structs, fn (struct) -> serializable_map(struct) end)
       def serializable_map(struct) when is_map(struct) do
         Enum.reduce(exposures(), %{}, fn (exposure, acc) ->
-          with key <- Exposure.key(exposure),
-               {:ok, value} <- Exposure.value(exposure, struct) do
-            Map.put(acc, key, value)
-          else
-            _ -> acc
+          with key <- Exposure.key(exposure) do
+            case Exposure.value(exposure, struct) do
+              {:merge, value} -> Map.merge(acc, value)
+              {:put, value} -> Map.put(acc, key, value)
+              :skip -> acc
+            end
           end
         end)
       end

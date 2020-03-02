@@ -13,10 +13,15 @@ defmodule Entitiex.Exposure do
     end)
   end
 
-  def value(%{handlers: handlers} = exposure, struct) do
+  def value(%{handlers: handlers, opts: opts} = exposure, struct) do
     value = get_value(struct, handlers, exposure)
+    merge = Keyword.get(opts, :merge, false) && is_map(value)
 
-    if expose?(exposure, struct, value), do: {:ok, value}, else: :skip
+    cond do
+      expose?(exposure, struct, value) && merge -> {:merge, value}
+      expose?(exposure, struct, value) -> {:put, value}
+      true -> :skip
+    end
   end
 
   defp get_value(value, [], _exposure),

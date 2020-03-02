@@ -10,8 +10,10 @@ defmodule Entitiex.Exposure.EntityHandler do
   end
 
   def setup(opts) do
+    merge = Keyword.get(opts, :merge, false)
+
     case Keyword.fetch(opts, :using) do
-      {:ok, entity} -> {__MODULE__, [nested: entity]}
+      {:ok, entity} -> {__MODULE__, [nested: entity, merge: merge]}
       :error -> nil
     end
   end
