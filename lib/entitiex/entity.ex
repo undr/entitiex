@@ -4,7 +4,7 @@ defmodule Entitiex.Entity do
   # @options [:as, :if, :unless, :using, :func, :documentation, :format_with, :expose_nil, :override]
 
   defmacro __using__(_opts \\ []) do
-    quote do
+    quote location: :keep do
       @__exposures__ []
       @__formatters__ []
       @__key_formatters__ []
@@ -15,26 +15,33 @@ defmodule Entitiex.Entity do
       Module.register_attribute(__MODULE__, :__key_formatters__, accumulate: true)
 
       alias Entitiex.Exposure
+      alias Entitiex.Utils
 
       import unquote(__MODULE__), only: [expose: 2, expose: 1, root: 2, root: 1, format_with: 2, format_keys: 1]
       @before_compile unquote(__MODULE__)
 
       def represent(struct, opts \\ [])
       def represent(structs, opts) when is_list(structs) do
-        inner = serializable_map(structs)
+        context = Keyword.get(opts, :context, %{})
+        extra = Keyword.get(opts, :extra, %{})
+        root = get_root(opts, :plural)
 
-        case get_root(opts, :plural) do
-          nil -> inner
-          root_key -> %{format_key(root_key) => inner}
-        end
+        do_represent(structs, root, context, extra)
       end
       def represent(struct, opts) do
-        inner = serializable_map(struct)
+        context = Keyword.get(opts, :context, %{})
+        extra = Keyword.get(opts, :extra, %{})
+        root = get_root(opts, :singular)
 
-        case get_root(opts, :singular) do
-          nil -> inner
-          root_key -> %{format_key(root_key) => inner}
-        end
+        do_represent(struct, root, context, extra)
+      end
+
+      defp do_represent(struct, :nil, _context, extra),
+        do: serializable_map(struct)
+      defp do_represent(struct, root, _context, extra) do
+        extra
+        |> Utils.transform_keys(&(format_key(&1)))
+        |> Map.put(format_key(root), serializable_map(struct))
       end
 
       def serializable_map(structs) when is_list(structs),
