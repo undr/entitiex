@@ -3,28 +3,19 @@ defmodule Entitiex.Exposure.Handler do
     quote location: :keep do
       @behaviour Entitiex.Exposure.Handler
 
-      def extract_value(%{entity: entity, attribute: attribute}, struct) do
-        if function_exported?(entity, attribute, 1) do
-          apply(entity, attribute, [struct])
-        else
-          Map.get(struct, attribute)
-        end
-      end
+      def key(_exposure, key),
+        do: key
 
-      def expose?(%{conditions: conditions}, struct, value),
-        do: Entitiex.Conditions.run(conditions, struct, value)
+      def value(_exposure, value),
+        do: value
 
-      def key(exposure),
-        do: {:ok, exposure.key}
+      def setup(_opts),
+        do: {__MODULE__, []}
 
-      def value(_exposure, _struct),
-        do: :skip
-
-      defoverridable [expose?: 3, key: 1, value: 2]
+      defoverridable [key: 2, value: 2, setup: 1]
     end
   end
 
-  @callback expose?(exposure :: %Entitiex.Exposure{}, struct :: any(), value :: any()) :: boolean()
-  @callback value(exposure :: %Entitiex.Exposure{}, value :: any()) :: {:ok, any()} | atom()
-  @callback key(exposure :: %Entitiex.Exposure{}) :: {:ok, atom()}
+  @callback value(exposure :: %Entitiex.Exposure{}, value :: any()) :: any()
+  @callback key(exposure :: %Entitiex.Exposure{}, key :: any()) :: any()
 end

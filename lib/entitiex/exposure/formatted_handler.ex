@@ -1,16 +1,31 @@
-defmodule Entitiex.Exposure.FormatterHandler do
+defmodule Entitiex.Exposure.FormattedHandler do
   use Entitiex.Exposure.Handler
 
-  def value(%{opts: opts, entity: entity} = exposure, struct) do
-    with {:ok, func} <- Keyword.fetch(opts, :format_with),
-         {:ok, func} <- normalize_formatter(func, entity),
-         value       <- extract_value(exposure, struct) do
-      if expose?(exposure, struct, value), do: {:ok, func.(value)}, else: :skip
+  alias Entitiex.Exposure.Formatter
+
+  @options [:format_with, :format_key]
+
+  def value(%Entitiex.Exposure{opts: opts, entity: entity}, value) do
+    format(entity, value, opts, :format_with)
+  end
+
+  def key(%Entitiex.Exposure{opts: opts, entity: entity}, key) do
+    format(entity, key, opts, :format_key)
+  end
+
+  def setup(opts) do
+    case Keyword.take(opts, @options) do
+      []   -> nil
+      opts -> {__MODULE__, opts}
     end
   end
 
-  defp normalize_formatter(func, _entity) when is_function(func),
-    do: {:ok, func}
-  defp normalize_formatter(name, entity) when is_atom(name),
-    do: {:ok, Keyword.get(entity.formatters(), name)}
+  defp format(entity, value, opts, name) do
+    with {:ok, func} <- Keyword.fetch(opts, name),
+         {:ok, value} <- Formatter.format(entity, func, value) do
+      value
+    else
+      _ -> value
+    end
+  end
 end

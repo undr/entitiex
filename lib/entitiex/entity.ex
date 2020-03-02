@@ -7,37 +7,41 @@ defmodule Entitiex.Entity do
     quote do
       @__exposures__ []
       @__formatters__ []
+      @__key_formatters__ []
       @__root__ [singular: nil, plural: nil]
 
       Module.register_attribute(__MODULE__, :__exposures__, accumulate: true)
       Module.register_attribute(__MODULE__, :__formatters__, accumulate: true)
+      Module.register_attribute(__MODULE__, :__key_formatters__, accumulate: true)
 
       alias Entitiex.Exposure
 
-      import unquote(__MODULE__), only: [expose: 2, expose: 1, root: 2, root: 1, format_with: 2]
+      import unquote(__MODULE__), only: [expose: 2, expose: 1, root: 2, root: 1, format_with: 2, format_keys: 1]
       @before_compile unquote(__MODULE__)
 
       def represent(struct, opts \\ [])
       def represent(structs, opts) when is_list(structs) do
-        inner = Enum.map(structs, fn (struct) -> serializable_map(struct) end)
+        inner = serializable_map(structs)
 
         case get_root(opts, :plural) do
-          root_key when not is_nil(root_key) -> %{root_key => inner}
-          _any -> inner
+          nil -> inner
+          root_key -> %{format_key(root_key) => inner}
         end
       end
       def represent(struct, opts) do
         inner = serializable_map(struct)
 
         case get_root(opts, :singular) do
-          root_key when not is_nil(root_key) -> %{root_key => inner}
-          _any -> inner
+          nil -> inner
+          root_key -> %{format_key(root_key) => inner}
         end
       end
 
-      def serializable_map(struct) do
+      def serializable_map(structs) when is_list(structs),
+        do: Enum.map(structs, fn (struct) -> serializable_map(struct) end)
+      def serializable_map(struct) when is_map(struct) do
         Enum.reduce(exposures(), %{}, fn (exposure, acc) ->
-          with {:ok, key} <- Exposure.key(exposure),
+          with key <- Exposure.key(exposure),
                {:ok, value} <- Exposure.value(exposure, struct) do
             Map.put(acc, key, value)
           else
@@ -45,6 +49,8 @@ defmodule Entitiex.Entity do
           end
         end)
       end
+      def serializable_map(struct),
+        do: struct
 
       defoverridable [serializable_map: 1]
     end
@@ -58,6 +64,17 @@ defmodule Entitiex.Entity do
 
       def exposures do
         @__exposures__
+      end
+
+      def format_key(key) do
+        @__key_formatters__
+        |> Enum.reverse()
+        |> Enum.reduce(key, fn func, acc ->
+          case Entitiex.Exposure.Formatter.format(__MODULE__, func, acc) do
+            {:ok, value} -> value
+            _ -> acc
+          end
+        end)
       end
 
       def get_root(opts, type) do
@@ -80,13 +97,13 @@ defmodule Entitiex.Entity do
       key = Keyword.get(opts, :as, attribute)
       conditions = Entitiex.Conditions.compile(opts)
       conditions = quote do: unquote(Macro.escape(conditions))
-      {handler, opts} = Entitiex.Exposure.handler(opts)
+      {handlers, opts} = Entitiex.Exposure.handlers(opts)
 
       quote do
         @__exposures__ %Entitiex.Exposure{
           conditions: unquote(Macro.escape(conditions)),
           attribute: unquote(attribute),
-          handler: unquote(handler),
+          handlers: unquote(handlers),
           entity: unquote(entity),
           opts: unquote(opts),
           key: unquote(key)
@@ -103,6 +120,12 @@ defmodule Entitiex.Entity do
   defp set_root(plural, singular) do
     quote location: :keep do
       @__root__ [singular: unquote(singular), plural: unquote(plural)]
+    end
+  end
+
+  defmacro format_keys(func) do
+    quote location: :keep do
+      @__key_formatters__ unquote(func)
     end
   end
 

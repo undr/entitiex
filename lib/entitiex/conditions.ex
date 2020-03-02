@@ -1,6 +1,6 @@
 defmodule Entitiex.Conditions do
   def compile(opts) do
-    [expose_nil_func(opts), get_condiion(opts)]
+    [expose_nil_func(opts), get_condition(opts)]
     |> Enum.reject(&is_nil/1)
   end
 
@@ -14,18 +14,16 @@ defmodule Entitiex.Conditions do
   def expose_nil?(_struct, value),
     do: !is_nil(value)
 
-  defp get_condiion(opts),
-    do: normalize_condition(Keyword.get(opts, :if), Keyword.get(opts, :entity))
+  defp get_condition(opts),
+    do: normalize_condition(Keyword.get(opts, :if))
 
-  defp normalize_condition(func, nil) when is_function(func),
+  defp normalize_condition(func) when is_function(func),
     do: func
-  defp normalize_condition(func, entity) when is_function(func),
-    do: {entity, func}
-  defp normalize_condition({m, f}, nil) when is_atom(m) and is_atom(f),
+  defp normalize_condition({m, f}) when is_atom(m) and is_atom(f),
     do: {m, f, []}
-  defp normalize_condition({m, f, a}, nil) when is_atom(m) and is_atom(f) and is_list(a),
+  defp normalize_condition({m, f, a}) when is_atom(m) and is_atom(f) and is_list(a),
     do: {m, f, a}
-  defp normalize_condition(_func, _entity),
+  defp normalize_condition(_func),
     do: nil
 
   defp expose_nil_func(opts) do
