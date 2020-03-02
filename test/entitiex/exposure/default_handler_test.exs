@@ -3,6 +3,14 @@ defmodule Entitiex.Exposure.DefaultHandlerTest do
 
   alias Entitiex.Exposure.DefaultHandler
 
+  defmodule Model do
+    defstruct [x: 0, y: 0]
+
+    def coords(struct) do
+      [struct.x, struct.y]
+    end
+  end
+
   defmodule Test do
     use Entitiex.Entity
   end
@@ -15,20 +23,34 @@ defmodule Entitiex.Exposure.DefaultHandlerTest do
     format_keys :to_s
     format_keys :reverse
 
-    def x(struct) do
-      case Map.get(struct, :x) do
-        nil -> "null"
-        any -> "calculated #{any}"
-      end
+    def x(_struct) do
+      "calculated value"
+    end
+
+    def y(_struct, attr) do
+      "calculated value for #{attr}"
     end
   end
 
   describe "value" do
-    test "when serializer has function" do
+    test "when model has function with arity 1" do
+      exposure = %Entitiex.Exposure{attribute: :coords, entity: TestX}
+      assert(DefaultHandler.value(exposure, %Model{}) == [0, 0])
+      assert(DefaultHandler.value(exposure, %Model{x: 1, y: 2}) == [1, 2])
+    end
+
+    test "when serializer has function with arity 1" do
       exposure = %Entitiex.Exposure{attribute: :x, entity: TestX}
-      assert(DefaultHandler.value(exposure, %{}) == "null")
-      assert(DefaultHandler.value(exposure, %{x: nil}) == "null")
+      assert(DefaultHandler.value(exposure, %{}) == "calculated value")
+      assert(DefaultHandler.value(exposure, %{x: nil}) == "calculated value")
       assert(DefaultHandler.value(exposure, %{x: "value"}) == "calculated value")
+    end
+
+    test "when serializer has function with arity 2" do
+      exposure = %Entitiex.Exposure{attribute: :y, key: :y0, entity: TestX}
+      assert(DefaultHandler.value(exposure, %{}) == "calculated value for y0")
+      assert(DefaultHandler.value(exposure, %{y: nil}) == "calculated value for y0")
+      assert(DefaultHandler.value(exposure, %{y: "value"}) == "calculated value for y0")
     end
 
     test "when serializer does not have function" do
