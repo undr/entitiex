@@ -17,7 +17,11 @@ defmodule Entitiex.Entity do
       alias Entitiex.Exposure
       alias Entitiex.Utils
 
-      import unquote(__MODULE__), only: [expose: 2, expose: 1, root: 2, root: 1, format_with: 2, format_keys: 1]
+      import unquote(__MODULE__), only: [
+        expose: 2, expose: 1, root: 2, root: 1, format_with: 2, format_keys: 1,
+        nesting: 2, nesting: 3, inline: 2, inline: 3
+      ]
+
       @before_compile unquote(__MODULE__)
 
       def represent(struct, opts \\ [])
@@ -70,6 +74,10 @@ defmodule Entitiex.Entity do
         @__formatters__
       end
 
+      def key_formatters do
+        @__key_formatters__
+      end
+
       def exposures do
         @__exposures__
       end
@@ -95,29 +103,53 @@ defmodule Entitiex.Entity do
   end
 
   defmacro expose(attributes, opts \\ []),
-    do: expose_attributes(attributes, __CALLER__, opts)
+    do: expose_attributes(attributes, opts)
 
-  defp expose_attributes(attribute, caller, opts) when is_binary(attribute) or is_atom(attribute),
-    do: expose_attributes([attribute], caller, opts)
-  defp expose_attributes(attributes, caller, opts) when is_list(attributes) do
+  defp expose_attributes(attribute, opts, block \\ nil)
+  defp expose_attributes(attribute, opts, block) when is_binary(attribute) or is_atom(attribute),
+    do: expose_attributes([attribute], opts, block)
+  defp expose_attributes(attributes, opts, block) when is_list(attributes) do
     Enum.map(attributes, fn (attribute) ->
-      entity = caller.module
       key = Keyword.get(opts, :as, attribute)
+      nesting = Keyword.get(opts, :nesting, false)
       conditions = Entitiex.Conditions.compile(opts)
-      {handlers, opts} = Entitiex.Exposure.handlers(opts)
 
       quote do
+        opts = if unquote(nesting) do
+          using = Entitiex.Entity.generate_module(
+            __ENV__.module,
+            unquote(Macro.escape(block)),
+            Macro.Env.location(__ENV__)
+          )
+          Keyword.merge(unquote(opts), [using: using])
+        else
+          unquote(opts)
+        end
+
+        {handlers, opts} = Entitiex.Exposure.handlers(opts)
+
         @__exposures__ %Entitiex.Exposure{
           conditions: unquote(Macro.escape(conditions)),
           attribute: unquote(attribute),
-          handlers: unquote(handlers),
-          entity: unquote(entity),
-          opts: unquote(opts),
+          handlers: handlers,
+          entity: __ENV__.module,
+          opts: opts,
           key: unquote(key)
         }
       end
     end)
   end
+
+  defmacro nesting(key, [do: block]),
+    do: expose_attributes([nil], [nesting: true, as: key], block)
+  defmacro nesting(key, opts, [do: block]),
+    do: expose_attributes([nil], Keyword.merge(opts, [nesting: true, as: key]), block)
+
+  defmacro inline(attribute, [do: block]),
+    do: expose_attributes([attribute], [nesting: true], block)
+  defmacro inline(attribute, opts, [do: block]),
+    do: expose_attributes([attribute], Keyword.merge(opts, [nesting: true]), block)
+
 
   defmacro root(plural, singular \\ nil),
     do: set_root(plural, singular)
@@ -140,5 +172,64 @@ defmodule Entitiex.Entity do
     quote location: :keep do
       @__formatters__ {unquote(name), unquote(func)}
     end
+  end
+
+  def generate_module(base, content, env) do
+    index = base
+    |> exposures()
+    |> length()
+
+    key_formatters = base
+    |> key_formatters()
+    |> Enum.map(fn key -> quote(do: @__key_formatters__ unquote(key)) end)
+
+    formatters = base
+    |> formatters()
+    |> Enum.map(fn key -> quote(do: @__formatters__ unquote(key)) end)
+
+    content = content
+    |> inject_code(key_formatters)
+    |> inject_code(formatters)
+    |> inject_code(quote do: use Entitiex.Entity)
+
+    {:module, nesting, _, _} = Module.create(:"#{base}.CodeGen.Nesting#{index}", content, env)
+    nesting
+  end
+
+  defp exposures(base) do
+    if Module.open?(base) do
+      Module.get_attribute(base, :__exposures__)
+    else
+      base.exposures()
+    end
+  end
+
+  defp formatters(base) do
+    if Module.open?(base) do
+      Module.get_attribute(base, :__formatters__)
+    else
+      base.formatters()
+    end
+  end
+
+  defp key_formatters(base) do
+    if Module.open?(base) do
+      Module.get_attribute(base, :__key_formatters__)
+    else
+      base.key_formatters()
+    end
+  end
+
+  defp inject_code(content, injection) when is_tuple(injection),
+    do: inject_code(content, [injection])
+  defp inject_code(content, []),
+    do: content
+  defp inject_code(content, [injection|injections]) do
+    nodes = case content do
+      {:__block__, [], all} -> all
+      any -> [any]
+    end
+
+    inject_code({:__block__, [], [injection|nodes]}, injections)
   end
 end

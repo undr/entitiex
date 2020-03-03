@@ -4,6 +4,8 @@ defmodule Entitiex.Exposure.DefaultHandler do
   alias Entitiex.Exposure
   alias Entitiex.Utils
 
+  def value(%Exposure{attribute: nil}, struct),
+    do: struct
   def value(%Exposure{entity: entity, attribute: attribute, key: key}, %{__struct__: module} = struct),
     do: get_value(struct, attribute, key, entity, module)
   def value(%Exposure{entity: entity, attribute: attribute, key: key}, struct),
