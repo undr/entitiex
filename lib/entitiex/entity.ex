@@ -104,7 +104,6 @@ defmodule Entitiex.Entity do
       entity = caller.module
       key = Keyword.get(opts, :as, attribute)
       conditions = Entitiex.Conditions.compile(opts)
-      conditions = quote do: unquote(Macro.escape(conditions))
       {handlers, opts} = Entitiex.Exposure.handlers(opts)
 
       quote do

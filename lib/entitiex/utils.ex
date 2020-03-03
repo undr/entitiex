@@ -12,7 +12,7 @@ defmodule Entitiex.Utils do
     end) |> Enum.into(%{})
   end
 
-  def func_exists?(nil, func, arity),
+  def func_exists?(nil, _func, _arity),
     do: false
   def func_exists?(module, func, arity),
     do: func_exported?(module, func, arity) || func_defined?(module, func, arity)

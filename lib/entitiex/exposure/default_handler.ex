@@ -4,14 +4,16 @@ defmodule Entitiex.Exposure.DefaultHandler do
   alias Entitiex.Exposure
   alias Entitiex.Utils
 
-  def value(%Exposure{attribute: attribute}, %{__struct__: module} = struct) do
+  def value(%Exposure{entity: entity, attribute: attribute, key: key}, %{__struct__: module} = struct),
+    do: get_value(struct, attribute, key, entity, module)
+  def value(%Exposure{entity: entity, attribute: attribute, key: key}, struct),
+    do: get_value(struct, attribute, key, entity, nil)
+
+  defp get_value(struct, attribute, key, entity, module) do
     cond do
-      Utils.func_exists?(module, attribute, 1) -> apply(module, attribute, [struct])
-      true -> Map.get(struct, attribute)
-    end
-  end
-  def value(%Exposure{entity: entity, attribute: attribute, key: key}, struct) do
-    cond do
+      Utils.func_exists?(module, attribute, 1) ->
+        apply(module, attribute, [struct])
+
       Utils.func_exists?(entity, attribute, 1) ->
         apply(entity, attribute, [struct])
 
