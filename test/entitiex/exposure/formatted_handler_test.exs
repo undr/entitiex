@@ -21,7 +21,7 @@ defmodule Entitiex.Exposure.FormattedHandlerTest do
     end
 
     test "when format is defined" do
-      exposure = %Entitiex.Exposure{opts: [format_with: :to_s], entity: Test}
+      exposure = %Entitiex.Exposure{opts: [format: :to_s], entity: Test}
       assert(FormattedHandler.value(exposure, 1) == "1")
       assert(FormattedHandler.value(exposure, :atom) == "atom")
       assert(FormattedHandler.value(exposure, "string") == "string")
@@ -29,7 +29,7 @@ defmodule Entitiex.Exposure.FormattedHandlerTest do
     end
 
     test "when format is defined as function" do
-      exposure = %Entitiex.Exposure{opts: [format_with: &Test.reverse?/1], entity: Test}
+      exposure = %Entitiex.Exposure{opts: [format: &Test.reverse?/1], entity: Test}
       assert(FormattedHandler.value(exposure, 1) == "1")
       assert(FormattedHandler.value(exposure, :atom) == "mota")
       assert(FormattedHandler.value(exposure, "string") == "gnirts")
@@ -55,14 +55,14 @@ defmodule Entitiex.Exposure.FormattedHandlerTest do
 
   test "setup" do
     assert(FormattedHandler.setup([]) == nil)
-    assert(FormattedHandler.setup([format_with: 'value']) == {FormattedHandler, [format_with: 'value']})
+    assert(FormattedHandler.setup([format: 'value']) == {FormattedHandler, [format: 'value']})
     assert(FormattedHandler.setup([format_key: 'key']) == {FormattedHandler, [format_key: 'key']})
     assert(FormattedHandler.setup(
-      [format_key: 'key', format_with: 'value']) == {FormattedHandler, [format_key: 'key', format_with: 'value']}
+      [format_key: 'key', format: 'value']) == {FormattedHandler, [format_key: 'key', format: 'value']}
     )
 
     assert(FormattedHandler.setup(
-      [format_key: 'key', format_with: 'value', using: 'using']) == {FormattedHandler, [format_key: 'key', format_with: 'value']}
+      [format_key: 'key', format: 'value', using: 'using']) == {FormattedHandler, [format_key: 'key', format: 'value']}
     )
   end
 end

@@ -1,7 +1,11 @@
 defmodule Entitiex.Exposure.EntityHandler do
   use Entitiex.Exposure.Handler
 
-  def value(%Entitiex.Exposure{opts: opts}, value) do
+  alias Entitiex.Exposure
+  alias Entitiex.Types
+
+  @spec value(Types.exposure(), any()) :: any()
+  def value(%Exposure{opts: opts}, value) do
     with {:ok, nested} <- Keyword.fetch(opts, :nested) do
       apply_nested(nested, value)
     else
@@ -9,6 +13,7 @@ defmodule Entitiex.Exposure.EntityHandler do
     end
   end
 
+  @spec setup(Types.exp_opts()) :: {Types.handler(), Types.exp_opts()} | nil
   def setup(opts) do
     merge = Keyword.get(opts, :merge, false)
 

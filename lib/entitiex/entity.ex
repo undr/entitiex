@@ -1,8 +1,6 @@
 defmodule Entitiex.Entity do
   alias Entitiex.Exposure
 
-  # @options [:as, :if, :unless, :using, :func, :documentation, :format_with, :expose_nil, :override]
-
   defmacro __using__(_opts \\ []) do
     quote location: :keep do
       @__exposures__ []
@@ -83,7 +81,7 @@ defmodule Entitiex.Entity do
       end
 
       def format_key(key) do
-        @__key_formatters__
+        key_formatters()
         |> Enum.reverse()
         |> Enum.reduce(key, fn func, acc ->
           case Entitiex.Exposure.Formatter.format(__MODULE__, func, acc) do
@@ -104,6 +102,16 @@ defmodule Entitiex.Entity do
 
   defmacro expose(attributes, opts \\ []),
     do: expose_attributes(attributes, opts)
+
+  defmacro nesting(key, [do: block]),
+    do: expose_attributes([nil], [nesting: true, as: key], block)
+  defmacro nesting(key, opts, [do: block]),
+    do: expose_attributes([nil], Keyword.merge(opts, [nesting: true, as: key]), block)
+
+  defmacro inline(attribute, [do: block]),
+    do: expose_attributes([attribute], [nesting: true], block)
+  defmacro inline(attribute, opts, [do: block]),
+    do: expose_attributes([attribute], Keyword.merge(opts, [nesting: true]), block)
 
   defp expose_attributes(attribute, opts, block \\ nil)
   defp expose_attributes(attribute, opts, block) when is_binary(attribute) or is_atom(attribute),
@@ -140,17 +148,6 @@ defmodule Entitiex.Entity do
     end)
   end
 
-  defmacro nesting(key, [do: block]),
-    do: expose_attributes([nil], [nesting: true, as: key], block)
-  defmacro nesting(key, opts, [do: block]),
-    do: expose_attributes([nil], Keyword.merge(opts, [nesting: true, as: key]), block)
-
-  defmacro inline(attribute, [do: block]),
-    do: expose_attributes([attribute], [nesting: true], block)
-  defmacro inline(attribute, opts, [do: block]),
-    do: expose_attributes([attribute], Keyword.merge(opts, [nesting: true]), block)
-
-
   defmacro root(plural, singular \\ nil),
     do: set_root(plural, singular)
 
@@ -174,6 +171,7 @@ defmodule Entitiex.Entity do
     end
   end
 
+  @spec generate_module(module(), any(), any()) :: module()
   def generate_module(base, content, env) do
     index = base
     |> exposures()

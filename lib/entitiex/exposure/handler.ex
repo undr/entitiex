@@ -16,6 +16,6 @@ defmodule Entitiex.Exposure.Handler do
     end
   end
 
-  @callback value(exposure :: %Entitiex.Exposure{}, value :: any()) :: any()
-  @callback key(exposure :: %Entitiex.Exposure{}, key :: any()) :: any()
+  @callback value(exposure :: Entitiex.Types.exposure(), value :: any()) :: any()
+  @callback key(exposure :: Entitiex.Types.exposure(), key :: any()) :: any()
 end

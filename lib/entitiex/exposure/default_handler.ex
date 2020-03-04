@@ -3,7 +3,9 @@ defmodule Entitiex.Exposure.DefaultHandler do
 
   alias Entitiex.Exposure
   alias Entitiex.Utils
+  alias Entitiex.Types
 
+  @spec value(Types.exposure(), any()) :: any()
   def value(%Exposure{attribute: nil}, struct),
     do: struct
   def value(%Exposure{entity: entity, attribute: attribute, key: key}, %{__struct__: module} = struct),
@@ -27,6 +29,7 @@ defmodule Entitiex.Exposure.DefaultHandler do
     end
   end
 
+  @spec key(Types.exposure(), any()) :: any()
   def key(%Exposure{entity: entity}, key) do
     entity.format_key(key)
   end

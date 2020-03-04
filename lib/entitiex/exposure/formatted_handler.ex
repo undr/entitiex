@@ -2,17 +2,22 @@ defmodule Entitiex.Exposure.FormattedHandler do
   use Entitiex.Exposure.Handler
 
   alias Entitiex.Exposure.Formatter
+  alias Entitiex.Exposure
+  alias Entitiex.Types
 
-  @options [:format_with, :format_key]
+  @options [:format, :format_key]
 
-  def value(%Entitiex.Exposure{opts: opts, entity: entity}, value) do
-    format(entity, value, opts, :format_with)
+  @spec value(Types.exposure(), any()) :: any()
+  def value(%Exposure{opts: opts, entity: entity}, value) do
+    format(entity, value, opts, :format)
   end
 
-  def key(%Entitiex.Exposure{opts: opts, entity: entity}, key) do
+  @spec key(Types.exposure(), any()) :: any()
+  def key(%Exposure{opts: opts, entity: entity}, key) do
     format(entity, key, opts, :format_key)
   end
 
+  @spec setup(Types.exp_opts()) :: {Types.handler(), Types.exp_opts()} | nil
   def setup(opts) do
     case Keyword.take(opts, @options) do
       []   -> nil

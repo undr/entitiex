@@ -1,4 +1,7 @@
 defmodule Entitiex.Utils do
+  @type opts :: [{:deep, boolean()}]
+
+  @spec transform_keys(Entitiex.Types.extra(), fun(), opts()) :: map()
   def transform_keys(map, func, opts \\ []) do
     deep = Keyword.get(opts, :deep, true)
 
@@ -12,6 +15,7 @@ defmodule Entitiex.Utils do
     end) |> Enum.into(%{})
   end
 
+  @spec func_exists?(module() | nil, atom(), arity()) :: boolean()
   def func_exists?(nil, _func, _arity),
     do: false
   def func_exists?(module, func, arity),

@@ -1,9 +1,13 @@
 defmodule Entitiex.Conditions do
+  alias Entitiex.Types
+
+  @spec compile(Types.exp_opts()) :: [Types.normal_func()]
   def compile(opts) do
     [expose_nil_func(opts), get_condition(opts)]
     |> Enum.reject(&is_nil/1)
   end
 
+  @spec run([Types.normal_func()], map(), any()) :: boolean()
   def run([], _struct, _value), do: true
   def run(conditions, struct, value) when is_list(conditions) do
     Enum.reduce(conditions, true, fn (condition, acc) ->
@@ -11,6 +15,7 @@ defmodule Entitiex.Conditions do
     end)
   end
 
+  @spec expose_nil?(map(), any()) :: boolean()
   def expose_nil?(_struct, value),
     do: !is_nil(value)
 
