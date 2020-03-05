@@ -3,6 +3,6 @@ defmodule EntitiexTest do
 
   test "default_formatters" do
     assert is_list(Entitiex.default_formatters())
-    assert Keyword.keys(Entitiex.default_formatters()) == [:to_s, :to_atom, :camelize, :lcamelize]
+    assert Keyword.keys(Entitiex.default_formatters()) == [:to_s, :to_atom, :upcase, :downcase, :camelize, :lcamelize]
   end
 end

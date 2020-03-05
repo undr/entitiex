@@ -32,7 +32,19 @@ defmodule Entitiex.Exposure.Formatter do
     String.replace_prefix(camelized, first, String.downcase(first))
   end
 
-  @spec format(module(), Types.formatter(), any()) :: any()
+  @spec upcase(any() | [any()]) :: String.t
+  def upcase(value) when is_list(value),
+    do: Enum.map(value, &upcase/1)
+  def upcase(value),
+    do: to_string(value) |> String.upcase
+
+  @spec downcase(any() | [any()]) :: String.t
+  def downcase(value) when is_list(value),
+    do: Enum.map(value, &downcase/1)
+  def downcase(value),
+    do: to_string(value) |> String.downcase
+
+  @spec format(module(), Types.formatter(), any()) :: {:ok, any()} | :error
   def format(entity, func, value) do
     with {:ok, func} <- normalize_formatter(func, entity) do
       {:ok, func.(value)}

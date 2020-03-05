@@ -19,6 +19,22 @@ defmodule Entitiex.Exposure.FormatterTest do
     assert Formatter.to_atom([1, 1.2, "string", :atom]) == [:"1", :"1.2", :string, :atom]
   end
 
+  test "upcase" do
+    assert Formatter.upcase(100) == "100"
+    assert Formatter.upcase(100.05) == "100.05"
+    assert Formatter.upcase("string") == "STRING"
+    assert Formatter.upcase(:atom) == "ATOM"
+    assert Formatter.upcase([1, 1.2, "string", :atom]) == ["1", "1.2", "STRING", "ATOM"]
+  end
+
+  test "downcase" do
+    assert Formatter.downcase(100) == "100"
+    assert Formatter.downcase(100.05) == "100.05"
+    assert Formatter.downcase("StRiNg") == "string"
+    assert Formatter.downcase(:Atom) == "atom"
+    assert Formatter.downcase([1, 1.2, "StRiNg", :Atom]) == ["1", "1.2", "string", "atom"]
+  end
+
   test "camelize" do
     assert Formatter.camelize(:atom_key) == "AtomKey"
     assert Formatter.camelize(:AtomKey) == "AtomKey"
