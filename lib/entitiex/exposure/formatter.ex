@@ -46,17 +46,28 @@ defmodule Entitiex.Exposure.Formatter do
 
   @spec format(module(), Types.formatter(), any()) :: {:ok, any()} | :error
   def format(entity, func, value) do
-    with {:ok, func} <- normalize_formatter(func, entity) do
-      {:ok, func.(value)}
+    with {:ok, funcs} <- normalize(func, entity) do
+      {:ok, apply_funcs(funcs, value)}
     end
   end
 
-  defp normalize_formatter(func, _entity) when is_function(func),
-    do: {:ok, func}
-  defp normalize_formatter(name, entity) when is_atom(name),
-    do: Keyword.fetch(formatters(entity), name)
+  defp normalize(list, entity) when is_list(list),
+    do: {:ok, Enum.map(list, fn func -> do_normalize(func, entity) end)}
+  defp normalize(func, entity),
+    do: {:ok, [do_normalize(func, entity)]}
+
+  defp do_normalize(func, _entity) when is_function(func),
+    do: func
+  defp do_normalize(name, entity) when is_atom(name),
+    do: Keyword.get(formatters(entity), name)
 
   defp formatters(entity) do
     Keyword.merge(Entitiex.default_formatters(), entity.formatters())
+  end
+
+  defp apply_funcs(funcs, value) do
+    funcs
+    |> Enum.reject(&is_nil/1)
+    |> Enum.reduce(value, fn func, acc -> func.(acc) end)
   end
 end
