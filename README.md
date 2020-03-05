@@ -139,9 +139,7 @@ UserEntity.represent(user)
 ```elixir
 UserEntity.represent(user, root: :data, extra: [meta: %{additional: "data"}])
 # => %{"data" => %{"id" => "1", ...}, "meta" => %{"additional" => "data"}}
-```
 
-```elixir
 UserEntity.represent([user], root: :data, extra: [meta: %{additional: "data"}])
 # => %{"data" => [%{"id" => "1", ...}], "meta" => %{"additional" => "data"}}
 ```

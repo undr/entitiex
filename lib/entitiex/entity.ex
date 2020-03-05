@@ -3,14 +3,15 @@ defmodule Entitiex.Entity do
 
   defmacro __using__(_opts \\ []) do
     quote location: :keep do
-      @__pre_exposures__ []
       @__exposures__ []
+      @__pre_exposures__ []
       @__key_formatters__ []
+      @__pre_key_formatters__ []
       @__root__ [singular: nil, plural: nil]
 
-      Module.register_attribute(__MODULE__, :__pre_exposures__, accumulate: true)
       Module.register_attribute(__MODULE__, :__exposures__, accumulate: true)
-      Module.register_attribute(__MODULE__, :__key_formatters__, accumulate: true)
+      Module.register_attribute(__MODULE__, :__pre_exposures__, accumulate: true)
+      Module.register_attribute(__MODULE__, :__pre_key_formatters__, accumulate: true)
 
       alias Entitiex.Exposure
       alias Entitiex.Utils
@@ -90,9 +91,17 @@ defmodule Entitiex.Entity do
       end
     end)
 
+    key_formatters = Module.get_attribute(__CALLER__.module, :__pre_key_formatters__)
+    key_formatters = Entitiex.Formatter.normalize(key_formatters, __CALLER__.module) |> Enum.reverse()
+    key_formatters = quote location: :keep do
+      @__key_formatters__ unquote(key_formatters)
+    end
+
     Module.delete_attribute(__CALLER__.module, :__pre_exposures__)
+    Module.delete_attribute(__CALLER__.module, :__pre_key_formatters__)
 
     quote location: :keep do
+      unquote(key_formatters)
       unquote(exposures)
 
       def key_formatters do
@@ -104,10 +113,7 @@ defmodule Entitiex.Entity do
       end
 
       def format_key(key) do
-        key_formatters()
-        |> Enum.reverse()
-        |> Entitiex.Formatter.normalize(__MODULE__)
-        |> Entitiex.Formatter.format(key)
+        Entitiex.Formatter.format(key_formatters(), key)
       end
 
       def get_root(opts, type) do
@@ -156,7 +162,7 @@ defmodule Entitiex.Entity do
 
   defmacro format_keys(func) do
     quote location: :keep do
-      @__key_formatters__ unquote(func)
+      @__pre_key_formatters__ unquote(func)
     end
   end
 
