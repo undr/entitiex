@@ -20,23 +20,8 @@ defmodule Entitiex.Exposure.FormattedHandlerTest do
       assert(FormattedHandler.value(exposure, [1, :atom, "string"]) == [1, :atom, "string"])
     end
 
-    test "when format is defined" do
-      exposure = %Entitiex.Exposure{opts: [format: :to_s], entity: Test}
-      assert(FormattedHandler.value(exposure, 1) == "1")
-      assert(FormattedHandler.value(exposure, :atom) == "atom")
-      assert(FormattedHandler.value(exposure, "string") == "string")
-      assert(FormattedHandler.value(exposure, [1, :atom, "string"]) == ["1", "atom", "string"])
-    end
-
-    test "when format is defined as function" do
-      exposure = %Entitiex.Exposure{opts: [format: &Test.reverse/1], entity: Test}
-      assert(FormattedHandler.value(exposure, 1) == "1")
-      assert(FormattedHandler.value(exposure, :atom) == "mota")
-      assert(FormattedHandler.value(exposure, "string") == "gnirts")
-    end
-
     test "when format is defined as list" do
-      exposure = %Entitiex.Exposure{opts: [format: [:to_s, &String.reverse/1]], entity: Test}
+      exposure = %Entitiex.Exposure{opts: [format: [&Entitiex.Formatter.to_s/1, &String.reverse/1]], entity: Test}
       assert(FormattedHandler.value(exposure, 1) == "1")
       assert(FormattedHandler.value(exposure, :atom) == "mota")
       assert(FormattedHandler.value(exposure, "string") == "gnirts")
@@ -49,32 +34,24 @@ defmodule Entitiex.Exposure.FormattedHandlerTest do
       assert(FormattedHandler.key(exposure, :entity_key) == :entity_key)
     end
 
-    test "when format is defined" do
-      exposure = %Entitiex.Exposure{opts: [format_key: :to_s], entity: Test}
-      assert(FormattedHandler.key(exposure, :entity_key) == "entity_key")
-    end
-
-    test "when format is defined as function" do
-      exposure = %Entitiex.Exposure{opts: [format_key: &Test.reverse/1], entity: Test}
-      assert(FormattedHandler.key(exposure, :entity_key) == "yek_ytitne")
-    end
-
     test "when format is defined as list" do
-      exposure = %Entitiex.Exposure{opts: [format_key: [:to_s, &String.reverse/1]], entity: Test}
+      exposure = %Entitiex.Exposure{opts: [format_key: [&Entitiex.Formatter.to_s/1, &String.reverse/1]], entity: Test}
       assert(FormattedHandler.key(exposure, :entity_key) == "yek_ytitne")
     end
   end
 
   test "setup" do
-    assert(FormattedHandler.setup([]) == nil)
-    assert(FormattedHandler.setup([format: 'value']) == {FormattedHandler, [format: 'value']})
-    assert(FormattedHandler.setup([format_key: 'key']) == {FormattedHandler, [format_key: 'key']})
-    assert(FormattedHandler.setup(
-      [format_key: 'key', format: 'value']) == {FormattedHandler, [format_key: 'key', format: 'value']}
+    assert(FormattedHandler.setup(Test, []) == nil)
+    assert(FormattedHandler.setup(Test, [format: :reverse]) == {FormattedHandler, [format: [&Test.reverse/1]]})
+    assert(FormattedHandler.setup(Test, [format_key: :reverse]) == {FormattedHandler, [format_key: [&Test.reverse/1]]})
+    assert(
+      FormattedHandler.setup(Test, [format_key: :reverse, format: :reverse]) ==
+        {FormattedHandler, [format_key: [&Test.reverse/1], format: [&Test.reverse/1]]}
     )
 
-    assert(FormattedHandler.setup(
-      [format_key: 'key', format: 'value', using: 'using']) == {FormattedHandler, [format_key: 'key', format: 'value']}
+    assert(
+      FormattedHandler.setup(Test, [format_key: :reverse, format: :reverse, using: 'using']) ==
+        {FormattedHandler, [format_key: [&Test.reverse/1], format: [&Test.reverse/1]]}
     )
   end
 end

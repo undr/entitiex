@@ -18,8 +18,6 @@ defmodule Entitiex.Exposure.DefaultHandlerTest do
   defmodule TestX do
     use Entitiex.Entity
 
-    format_with :reverse, &String.reverse/1
-
     format_keys :to_s
     format_keys :reverse
 
@@ -29,6 +27,10 @@ defmodule Entitiex.Exposure.DefaultHandlerTest do
 
     def y(_struct, attr) do
       "calculated value for #{attr}"
+    end
+
+    def reverse(value) do
+      String.reverse(value)
     end
   end
 
@@ -74,6 +76,6 @@ defmodule Entitiex.Exposure.DefaultHandlerTest do
   end
 
   test "setup" do
-    assert(DefaultHandler.setup([]) == {DefaultHandler, []})
+    assert(DefaultHandler.setup(:Any, []) == {DefaultHandler, []})
   end
 end

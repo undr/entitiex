@@ -6,19 +6,19 @@ defmodule Entitiex.Exposure.EntityHandler do
 
   @spec value(Types.exposure(), any()) :: any()
   def value(%Exposure{opts: opts}, value) do
-    with {:ok, nested} <- Keyword.fetch(opts, :nested) do
+    with {:ok, nested} <- Keyword.fetch(opts, :using) do
       apply_nested(nested, value)
     else
       _ -> nil
     end
   end
 
-  @spec setup(Types.exp_opts()) :: {Types.handler(), Types.exp_opts()} | nil
-  def setup(opts) do
+  @spec setup(module(), Types.exp_opts()) :: {Types.handler(), Types.normal_exp_opts()} | nil
+  def setup(_entity, opts) do
     merge = Keyword.get(opts, :merge, false)
 
     case Keyword.fetch(opts, :using) do
-      {:ok, entity} -> {__MODULE__, [nested: entity, merge: merge]}
+      {:ok, entity} -> {__MODULE__, [using: entity, merge: merge]}
       :error -> nil
     end
   end

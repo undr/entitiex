@@ -11,15 +11,15 @@ defmodule Entitiex.Exposure.EntityHandlerTest do
   end
 
   describe "value" do
-    test "when nested is defined" do
-      exposure = %Entitiex.Exposure{opts: [nested: Test]}
+    test "when using option is defined" do
+      exposure = %Entitiex.Exposure{opts: [using: Test]}
       assert(EntityHandler.value(exposure, nil) == nil)
       assert(EntityHandler.value(exposure, %{}) == %{})
       assert(EntityHandler.value(exposure, %{x: "x", y: "y", z: "z"}) == %{x: "x", y: "y"})
       assert(EntityHandler.value(exposure, [%{x: "x", y: "y", z: "z"}]) == [%{x: "x", y: "y"}])
     end
 
-    test "when nested is not defined" do
+    test "when using option is not defined" do
       exposure = %Entitiex.Exposure{opts: []}
       assert(EntityHandler.value(exposure, nil) == nil)
       assert(EntityHandler.value(exposure, %{}) == nil)
@@ -33,8 +33,8 @@ defmodule Entitiex.Exposure.EntityHandlerTest do
   end
 
   test "setup" do
-    assert(EntityHandler.setup([]) == nil)
-    assert(EntityHandler.setup([using: Test]) == {EntityHandler, [nested: Test, merge: false]})
-    assert(EntityHandler.setup([using: Test, merge: true]) == {EntityHandler, [nested: Test, merge: true]})
+    assert(EntityHandler.setup(:Any, []) == nil)
+    assert(EntityHandler.setup(:Any, [using: Test]) == {EntityHandler, [using: Test, merge: false]})
+    assert(EntityHandler.setup(:Any, [using: Test, merge: true]) == {EntityHandler, [using: Test, merge: true]})
   end
 end

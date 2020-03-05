@@ -1,34 +1,37 @@
 defmodule Entitiex.Exposure.FormattedHandler do
   use Entitiex.Exposure.Handler
 
-  alias Entitiex.Exposure.Formatter
+  alias Entitiex.Formatter
   alias Entitiex.Exposure
   alias Entitiex.Types
 
   @options [:format, :format_key]
 
   @spec value(Types.exposure(), any()) :: any()
-  def value(%Exposure{opts: opts, entity: entity}, value) do
-    format(entity, value, opts, :format)
+  def value(%Exposure{opts: opts}, value) do
+    format(value, opts, :format)
   end
 
   @spec key(Types.exposure(), any()) :: any()
-  def key(%Exposure{opts: opts, entity: entity}, key) do
-    format(entity, key, opts, :format_key)
+  def key(%Exposure{opts: opts}, key) do
+    format(key, opts, :format_key)
   end
 
-  @spec setup(Types.exp_opts()) :: {Types.handler(), Types.exp_opts()} | nil
-  def setup(opts) do
+  @spec setup(module(), Types.exp_opts()) :: {Types.handler(), Types.normal_exp_opts()} | nil
+  def setup(entity, opts) do
     case Keyword.take(opts, @options) do
       []   -> nil
-      opts -> {__MODULE__, opts}
+      opts -> {__MODULE__, normalize_options(entity, opts)}
     end
   end
 
-  defp format(entity, value, opts, name) do
-    with {:ok, func} <- Keyword.fetch(opts, name),
-         {:ok, value} <- Formatter.format(entity, func, value) do
-      value
+  defp normalize_options(entity, opts) do
+    Enum.map(opts, fn {key, formatters} -> {key, Formatter.normalize(formatters, entity)} end)
+  end
+
+  defp format(value, opts, name) do
+    with {:ok, formatters} <- Keyword.fetch(opts, name)do
+      Formatter.format(formatters, value)
     else
       _ -> value
     end

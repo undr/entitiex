@@ -1,7 +1,7 @@
 defmodule Entitiex.Exposure.FormatterTest do
   use ExUnit.Case
 
-  alias Entitiex.Exposure.Formatter
+  alias Entitiex.Formatter
 
   test "to_s" do
     assert Formatter.to_s(100) == "100"

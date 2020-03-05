@@ -10,6 +10,22 @@ defmodule Entitiex.Exposure do
 
   @type t :: Types.exposure()
 
+  @spec new(module(), Types.attr(), Types.exp_opts()) :: t()
+  def new(entity, attribute, opts) do
+    key = Keyword.get(opts, :as, attribute)
+    conditions = Entitiex.Conditions.compile(entity, opts)
+    {handlers, opts} = setup_handlers(entity, opts)
+
+    %Entitiex.Exposure{
+      conditions: conditions,
+      attribute: attribute,
+      handlers: handlers,
+      entity: entity,
+      opts: opts,
+      key: key
+    }
+  end
+
   @spec key(t()) :: any()
   def key(%{handlers: handlers} = exposure) do
     Enum.reduce(handlers, exposure.key, fn(handler, acc) ->
@@ -30,10 +46,10 @@ defmodule Entitiex.Exposure do
     end
   end
 
-  @spec handlers(Types.exp_opts()) :: {Types.handlers(), Types.exp_opts()}
-  def handlers(opts) do
+  @spec setup_handlers(module(), Types.exp_opts()) :: {Types.handlers(), Types.normal_exp_opts()}
+  def setup_handlers(entity, opts) do
     data = @handlers
-    |> Enum.map(fn handler -> handler.setup(opts) end)
+    |> Enum.map(fn handler -> handler.setup(entity, opts) end)
     |> Enum.reject(&is_nil/1)
 
     {Keyword.keys(data), Keyword.values(data) |> Enum.reduce(&Keyword.merge/2)}

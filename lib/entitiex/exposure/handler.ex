@@ -9,10 +9,10 @@ defmodule Entitiex.Exposure.Handler do
       def value(_exposure, value),
         do: value
 
-      def setup(_opts),
+      def setup(_entity, _opts),
         do: {__MODULE__, []}
 
-      defoverridable [key: 2, value: 2, setup: 1]
+      defoverridable [key: 2, value: 2, setup: 2]
     end
   end
 

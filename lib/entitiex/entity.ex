@@ -3,20 +3,20 @@ defmodule Entitiex.Entity do
 
   defmacro __using__(_opts \\ []) do
     quote location: :keep do
+      @__pre_exposures__ []
       @__exposures__ []
-      @__formatters__ []
       @__key_formatters__ []
       @__root__ [singular: nil, plural: nil]
 
+      Module.register_attribute(__MODULE__, :__pre_exposures__, accumulate: true)
       Module.register_attribute(__MODULE__, :__exposures__, accumulate: true)
-      Module.register_attribute(__MODULE__, :__formatters__, accumulate: true)
       Module.register_attribute(__MODULE__, :__key_formatters__, accumulate: true)
 
       alias Entitiex.Exposure
       alias Entitiex.Utils
 
       import unquote(__MODULE__), only: [
-        expose: 2, expose: 1, root: 2, root: 1, format_with: 2, format_keys: 1,
+        expose: 2, expose: 1, root: 2, root: 1, format_keys: 1,
         nesting: 2, nesting: 3, inline: 2, inline: 3
       ]
 
@@ -67,10 +67,33 @@ defmodule Entitiex.Entity do
   end
 
   defmacro __before_compile__(_env) do
-    quote location: :keep do
-      def formatters do
-        @__formatters__
+    exposures = Enum.map(Module.get_attribute(__CALLER__.module, :__pre_exposures__), fn {attribute, opts, block} ->
+      nesting = Keyword.get(opts, :nesting, false)
+
+      quote location: :keep do
+        opts = if unquote(nesting) do
+          using = Entitiex.Entity.generate_module(
+            __ENV__.module,
+            unquote(Macro.escape(block)),
+            Macro.Env.location(__ENV__)
+          )
+          Keyword.merge(unquote(opts), [using: using])
+        else
+          unquote(opts)
+        end
+
+        @__exposures__ Entitiex.Exposure.new(
+          __ENV__.module,
+          unquote(attribute),
+          opts
+        )
       end
+    end)
+
+    Module.delete_attribute(__CALLER__.module, :__pre_exposures__)
+
+    quote location: :keep do
+      unquote(exposures)
 
       def key_formatters do
         @__key_formatters__
@@ -83,12 +106,8 @@ defmodule Entitiex.Entity do
       def format_key(key) do
         key_formatters()
         |> Enum.reverse()
-        |> Enum.reduce(key, fn func, acc ->
-          case Entitiex.Exposure.Formatter.format(__MODULE__, func, acc) do
-            {:ok, value} -> value
-            _ -> acc
-          end
-        end)
+        |> Entitiex.Formatter.normalize(__MODULE__)
+        |> Entitiex.Formatter.format(key)
       end
 
       def get_root(opts, type) do
@@ -118,32 +137,8 @@ defmodule Entitiex.Entity do
     do: expose_attributes([attribute], opts, block)
   defp expose_attributes(attributes, opts, block) when is_list(attributes) do
     Enum.map(attributes, fn (attribute) ->
-      key = Keyword.get(opts, :as, attribute)
-      nesting = Keyword.get(opts, :nesting, false)
-      conditions = Entitiex.Conditions.compile(opts)
-
       quote do
-        opts = if unquote(nesting) do
-          using = Entitiex.Entity.generate_module(
-            __ENV__.module,
-            unquote(Macro.escape(block)),
-            Macro.Env.location(__ENV__)
-          )
-          Keyword.merge(unquote(opts), [using: using])
-        else
-          unquote(opts)
-        end
-
-        {handlers, opts} = Entitiex.Exposure.handlers(opts)
-
-        @__exposures__ %Entitiex.Exposure{
-          conditions: unquote(Macro.escape(conditions)),
-          attribute: unquote(attribute),
-          handlers: handlers,
-          entity: __ENV__.module,
-          opts: opts,
-          key: unquote(key)
-        }
+        @__pre_exposures__ {unquote(attribute), unquote(opts), unquote(Macro.escape(block))}
       end
     end)
   end
@@ -165,12 +160,6 @@ defmodule Entitiex.Entity do
     end
   end
 
-  defmacro format_with(name, func) do
-    quote location: :keep do
-      @__formatters__ {unquote(name), unquote(func)}
-    end
-  end
-
   @spec generate_module(module(), any(), any()) :: module()
   def generate_module(base, content, env) do
     index = base
@@ -181,13 +170,8 @@ defmodule Entitiex.Entity do
     |> key_formatters()
     |> Enum.map(fn key -> quote(do: @__key_formatters__ unquote(key)) end)
 
-    formatters = base
-    |> formatters()
-    |> Enum.map(fn key -> quote(do: @__formatters__ unquote(key)) end)
-
     content = content
     |> inject_code(key_formatters)
-    |> inject_code(formatters)
     |> inject_code(quote do: use Entitiex.Entity)
 
     {:module, nesting, _, _} = Module.create(:"#{base}.CodeGen.Nesting#{index}", content, env)
@@ -199,14 +183,6 @@ defmodule Entitiex.Entity do
       Module.get_attribute(base, :__exposures__)
     else
       base.exposures()
-    end
-  end
-
-  defp formatters(base) do
-    if Module.open?(base) do
-      Module.get_attribute(base, :__formatters__)
-    else
-      base.formatters()
     end
   end
 

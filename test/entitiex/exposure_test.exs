@@ -17,11 +17,9 @@ defmodule Entitiex.ExposureTest do
   defmodule TestValue do
     use Entitiex.Entity
 
-    format_with :reverse, &String.reverse/1
-
     expose :without_alias
     expose :with_alias, as: :alias_of_key
-    expose :with_format, format_key: :lcamelize
+    expose :with_expose_nil, expose_nil: true
     expose :with_format_and_alias, as: :formatted_alias_of_key, format_key: :lcamelize
   end
 

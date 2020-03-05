@@ -1,4 +1,4 @@
-defmodule Entitiex.Exposure.Formatter do
+defmodule Entitiex.Formatter do
   alias Entitiex.Types
 
   @spec to_s(any() | [any()]) :: String.t()
@@ -44,30 +44,16 @@ defmodule Entitiex.Exposure.Formatter do
   def downcase(value),
     do: to_string(value) |> String.downcase
 
-  @spec format(module(), Types.formatter(), any()) :: {:ok, any()} | :error
-  def format(entity, func, value) do
-    with {:ok, funcs} <- normalize(func, entity) do
-      {:ok, apply_funcs(funcs, value)}
-    end
-  end
-
-  defp normalize(list, entity) when is_list(list),
-    do: {:ok, Enum.map(list, fn func -> do_normalize(func, entity) end)}
-  defp normalize(func, entity),
-    do: {:ok, [do_normalize(func, entity)]}
-
-  defp do_normalize(func, _entity) when is_function(func),
-    do: func
-  defp do_normalize(name, entity) when is_atom(name),
-    do: Keyword.get(formatters(entity), name)
-
-  defp formatters(entity) do
-    Keyword.merge(Entitiex.default_formatters(), entity.formatters())
-  end
-
-  defp apply_funcs(funcs, value) do
-    funcs
+  @spec format(Types.normal_funcs(), any()) :: {:ok, any()} | :error
+  def format(formatter, value) when is_function(formatter),
+    do: format([formatter], value)
+  def format(formatters, value) do
+    formatters
     |> Enum.reject(&is_nil/1)
     |> Enum.reduce(value, fn func, acc -> func.(acc) end)
   end
+
+  @spec normalize(Types.funcs(), module()) :: Types.normal_funcs()
+  def normalize(formatters, entity),
+    do: Entitiex.Normalizer.normalize(:formatter, formatters, entity)
 end
