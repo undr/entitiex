@@ -15,14 +15,14 @@ defmodule Entitiex.Exposure.DefaultHandler do
 
   defp get_value(struct, attribute, key, entity, module) do
     cond do
-      Utils.func_exists?(module, attribute, 1) ->
-        apply(module, attribute, [struct])
-
       Utils.func_exists?(entity, attribute, 1) ->
         apply(entity, attribute, [struct])
 
       Utils.func_exists?(entity, attribute, 2) ->
         apply(entity, attribute, [struct, key])
+
+      Utils.func_exists?(module, attribute, 1) ->
+        apply(module, attribute, [struct])
 
       true ->
         Map.get(struct, attribute)
