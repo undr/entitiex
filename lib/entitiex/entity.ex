@@ -1,10 +1,12 @@
 defmodule Entitiex.Entity do
   alias Entitiex.Exposure
+  alias Entitiex.Types
 
   defmacro __using__(_opts \\ []) do
     quote location: :keep do
       @__exposures__ []
       @__pre_exposures__ []
+      @__shared_options__ []
       @__key_formatters__ []
       @__pre_key_formatters__ []
       @__root__ [singular: nil, plural: nil]
@@ -18,7 +20,7 @@ defmodule Entitiex.Entity do
 
       import unquote(__MODULE__), only: [
         expose: 2, expose: 1, root: 2, root: 1, format_keys: 1,
-        nesting: 2, nesting: 3, inline: 2, inline: 3
+        nesting: 2, nesting: 3, inline: 2, inline: 3, with_options: 2
       ]
 
       @before_compile unquote(__MODULE__)
@@ -98,6 +100,7 @@ defmodule Entitiex.Entity do
     end
 
     Module.delete_attribute(__CALLER__.module, :__pre_exposures__)
+    Module.delete_attribute(__CALLER__.module, :__shared_options__)
     Module.delete_attribute(__CALLER__.module, :__pre_key_formatters__)
 
     quote location: :keep do
@@ -144,7 +147,7 @@ defmodule Entitiex.Entity do
   defp expose_attributes(attributes, opts, block) when is_list(attributes) do
     Enum.map(attributes, fn (attribute) ->
       quote do
-        @__pre_exposures__ {unquote(attribute), unquote(opts), unquote(Macro.escape(block))}
+        @__pre_exposures__ {unquote(attribute), Entitiex.Entity.reduce_options(__ENV__.module, unquote(opts)), unquote(Macro.escape(block))}
       end
     end)
   end
@@ -164,6 +167,24 @@ defmodule Entitiex.Entity do
     quote location: :keep do
       @__pre_key_formatters__ unquote(func)
     end
+  end
+
+  defmacro with_options(opts, [do: block]) do
+    quote location: :keep do
+      @__shared_options__ [unquote(opts) | @__shared_options__]
+
+      try do
+        unquote(block)
+      after
+        @__shared_options__ tl(@__shared_options__)
+      end
+    end
+  end
+
+  @spec reduce_options(module(), Types.exp_opts()) :: Types.exp_opts()
+  def reduce_options(base, opts) do
+    shared_opts = Module.get_attribute(base, :__shared_options__, [])
+    Enum.reduce([opts|shared_opts], &Entitiex.Options.merge/2)
   end
 
   @spec generate_module(module(), any(), any()) :: module()

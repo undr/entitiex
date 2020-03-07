@@ -14,7 +14,6 @@ defmodule Entitiex.Types do
   @type exp_opt ::
     {:format, funcs()} |
     {:format_key, funcs()} |
-    {:nested, module()} |
     {:merge, boolean()} |
     {:using, module()} |
     {:if, funcs()} |

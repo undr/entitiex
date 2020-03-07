@@ -1,4 +1,4 @@
-defmodule Entitiex.Exposure.FormatterTest do
+defmodule Entitiex.FormatterTest do
   use ExUnit.Case
 
   alias Entitiex.Formatter

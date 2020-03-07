@@ -3,7 +3,11 @@ defmodule Entitiex.ExposureTest do
 
   alias Entitiex.Exposure
 
-  defmodule TestEntity do
+  defmodule Test1Entity do
+    use Entitiex.Entity
+  end
+
+  defmodule Test2Entity do
     use Entitiex.Entity
 
     format_keys :to_s
@@ -19,22 +23,32 @@ defmodule Entitiex.ExposureTest do
   end
 
   describe "key" do
-    @tag entity: TestEntity, opts: []
+    @tag entity: Test1Entity, opts: []
+    test "without global key formatter and opts", %{exposure: exposure} do
+      assert(Exposure.key(exposure) == :attr_name)
+    end
+
+    @tag entity: Test1Entity, opts: [as: :key_alias]
+    test "without global key formatter and with alias", %{exposure: exposure} do
+      assert(Exposure.key(exposure) == :key_alias)
+    end
+
+    @tag entity: Test2Entity, opts: []
     test "without opts", %{exposure: exposure} do
       assert(Exposure.key(exposure) == "attr_name")
     end
 
-    @tag entity: TestEntity, opts: [as: :key_alias]
+    @tag entity: Test2Entity, opts: [as: :key_alias]
     test "with alias", %{exposure: exposure} do
       assert(Exposure.key(exposure) == "key_alias")
     end
 
-    @tag entity: TestEntity, opts: [format_key: :custom_formatter]
+    @tag entity: Test2Entity, opts: [format_key: :custom_formatter]
     test "with format", %{exposure: exposure} do
       assert(Exposure.key(exposure) == "attr_name_formatted")
     end
 
-    @tag entity: TestEntity, opts: [as: :key_alias, format_key: :custom_formatter]
+    @tag entity: Test2Entity, opts: [as: :key_alias, format_key: :custom_formatter]
     test "with format and alias", %{exposure: exposure} do
       assert(Exposure.key(exposure) == "key_alias_formatted")
     end
