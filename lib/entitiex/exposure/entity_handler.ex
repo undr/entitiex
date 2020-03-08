@@ -4,10 +4,10 @@ defmodule Entitiex.Exposure.EntityHandler do
   alias Entitiex.Exposure
   alias Entitiex.Types
 
-  @spec value(Types.exposure(), any()) :: any()
-  def value(%Exposure{opts: opts}, value) do
+  @spec value(Types.exposure(), any(), map()) :: any()
+  def value(%Exposure{opts: opts}, value, context \\ %{}) do
     with {:ok, nested} <- Keyword.fetch(opts, :using) do
-      apply_nested(nested, value)
+      apply_nested(nested, value, context)
     else
       _ -> nil
     end
@@ -21,6 +21,6 @@ defmodule Entitiex.Exposure.EntityHandler do
     end
   end
 
-  defp apply_nested(nested, value),
-    do: apply(nested, :serializable_map, [value])
+  defp apply_nested(nested, value, context),
+    do: apply(nested, :serializable_map, [value, context])
 end

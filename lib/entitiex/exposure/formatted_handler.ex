@@ -7,8 +7,8 @@ defmodule Entitiex.Exposure.FormattedHandler do
 
   @options [:format, :format_key]
 
-  @spec value(Types.exposure(), any()) :: any()
-  def value(%Exposure{opts: opts}, value) do
+  @spec value(Types.exposure(), any(), map()) :: any()
+  def value(%Exposure{opts: opts}, value, _context \\ %{}) do
     format(value, opts, :format)
   end
 

@@ -29,8 +29,7 @@ defmodule Entitiex.Types do
     {:format_key, normal_funcs()} |
     {:merge, boolean()} |
     {:using, module()} |
-    {:if, normal_funcs()} |
-    {:as, atom()}
+    {:if, normal_funcs()}
 
   @type key :: attr()
   @type attr :: String.t() | atom()

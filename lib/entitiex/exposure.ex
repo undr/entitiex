@@ -33,11 +33,11 @@ defmodule Entitiex.Exposure do
     end)
   end
 
-  @spec value(t(), map()) :: Types.value_tuple()
-  def value(%{handlers: handlers, opts: opts} = exposure, struct) do
-    value = get_value(struct, handlers, exposure)
+  @spec value(t(), map(), map()) :: Types.value_tuple()
+  def value(%{handlers: handlers, opts: opts} = exposure, struct, context \\ %{}) do
+    value = get_value(struct, handlers, exposure, context)
     merge = Keyword.get(opts, :merge, false) && is_map(value)
-    expose = expose?(exposure, struct, value)
+    expose = expose?(exposure, struct, value, context)
 
     cond do
       expose && merge -> {:merge, value}
@@ -55,14 +55,14 @@ defmodule Entitiex.Exposure do
     {Keyword.keys(data), Keyword.values(data) |> Enum.reduce(&Keyword.merge/2)}
   end
 
-  @spec expose?(t(), map(), any()) :: boolean()
-  def expose?(%{conditions: conditions}, struct, value),
-    do: Entitiex.Conditions.run(conditions, struct, value)
+  @spec expose?(t(), map(), any(), map()) :: boolean()
+  def expose?(%{conditions: conditions}, struct, value, context),
+    do: Entitiex.Conditions.run(conditions, struct, value, context)
 
-  defp get_value(value, [], _exposure),
+  defp get_value(value, [], _exposure, _context),
     do: value
-  defp get_value(nil, _handlers, _exposure),
+  defp get_value(nil, _handlers, _exposure, _context),
     do: nil
-  defp get_value(value, [handler|handlers], exposure),
-    do: handler.value(exposure, value) |> get_value(handlers, exposure)
+  defp get_value(value, [handler|handlers], exposure, context),
+    do: handler.value(exposure, value, context) |> get_value(handlers, exposure, context)
 end

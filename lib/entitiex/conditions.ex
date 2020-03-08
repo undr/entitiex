@@ -7,11 +7,19 @@ defmodule Entitiex.Conditions do
     |> Enum.reject(&is_nil/1)
   end
 
-  @spec run(Types.normal_funcs(), map(), any()) :: boolean()
-  def run([], _struct, _value), do: true
-  def run(conditions, struct, value) when is_list(conditions) do
+  @spec run(Types.normal_funcs(), map(), any(), map()) :: boolean()
+  def run(conditions, struct, value, context \\ %{})
+  def run([], _struct, _value, _context), do: true
+  def run(conditions, struct, value, context) when is_list(conditions) do
     Enum.reduce(conditions, true, fn (condition, acc) ->
-      acc && condition.(struct, value)
+      case Function.info(condition, :arity) do
+        {:arity, 2} ->
+          acc && condition.(struct, value)
+        {:arity, 3} ->
+          acc && condition.(struct, value, context)
+        _ ->
+          throw {:error, {:wrong_condition, condition}}
+      end
     end)
   end
 

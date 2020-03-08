@@ -41,20 +41,21 @@ defmodule Entitiex.Entity do
         do_represent(struct, root, context, extra)
       end
 
-      defp do_represent(struct, :nil, _context, extra),
-        do: serializable_map(struct)
-      defp do_represent(struct, root, _context, extra) do
+      defp do_represent(struct, :nil, context, extra),
+        do: serializable_map(struct, context)
+      defp do_represent(struct, root, context, extra) do
         extra
         |> Utils.transform_keys(&(format_key(&1)))
-        |> Map.put(format_key(root), serializable_map(struct))
+        |> Map.put(format_key(root), serializable_map(struct, context))
       end
 
-      def serializable_map(structs) when is_list(structs),
-        do: Enum.map(structs, fn (struct) -> serializable_map(struct) end)
-      def serializable_map(struct) when is_map(struct) do
+      def serializable_map(structs, context \\ %{})
+      def serializable_map(structs, context) when is_list(structs),
+        do: Enum.map(structs, fn (struct) -> serializable_map(struct, context) end)
+      def serializable_map(struct, context) when is_map(struct) do
         Enum.reduce(exposures(), %{}, fn (exposure, acc) ->
           with key <- Exposure.key(exposure) do
-            case Exposure.value(exposure, struct) do
+            case Exposure.value(exposure, struct, context) do
               {:merge, value} -> Map.merge(acc, value)
               {:put, value} -> Map.put(acc, key, value)
               :skip -> acc
@@ -62,7 +63,7 @@ defmodule Entitiex.Entity do
           end
         end)
       end
-      def serializable_map(struct),
+      def serializable_map(struct, _context),
         do: struct
 
       defoverridable [serializable_map: 1]
