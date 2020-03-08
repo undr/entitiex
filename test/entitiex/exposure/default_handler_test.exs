@@ -76,6 +76,7 @@ defmodule Entitiex.Exposure.DefaultHandlerTest do
   end
 
   test "setup" do
-    assert(DefaultHandler.setup(:Any, []) == {DefaultHandler, []})
+    assert(DefaultHandler.setup(:Any, []) == {DefaultHandler, [merge: false]})
+    assert(DefaultHandler.setup(:Any, [merge: true]) == {DefaultHandler, [merge: true]})
   end
 end

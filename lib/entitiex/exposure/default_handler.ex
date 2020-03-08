@@ -33,4 +33,10 @@ defmodule Entitiex.Exposure.DefaultHandler do
   def key(%Exposure{entity: entity}, key) do
     entity.format_key(key)
   end
+
+  @spec setup(module(), Types.exp_opts()) :: {Types.handler(), Types.normal_exp_opts()}
+  def setup(_entity, opts) do
+    merge = Keyword.get(opts, :merge, false)
+    {__MODULE__, [merge: merge]}
+  end
 end

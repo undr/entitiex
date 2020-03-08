@@ -34,7 +34,6 @@ defmodule Entitiex.Exposure.EntityHandlerTest do
 
   test "setup" do
     assert(EntityHandler.setup(:Any, []) == nil)
-    assert(EntityHandler.setup(:Any, [using: Test]) == {EntityHandler, [using: Test, merge: false]})
-    assert(EntityHandler.setup(:Any, [using: Test, merge: true]) == {EntityHandler, [using: Test, merge: true]})
+    assert(EntityHandler.setup(:Any, [using: Test]) == {EntityHandler, [using: Test]})
   end
 end

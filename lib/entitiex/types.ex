@@ -1,4 +1,8 @@
 defmodule Entitiex.Types do
+  alias Entitiex.Exposure.EntityHandler
+  alias Entitiex.Exposure.DefaultHandler
+  alias Entitiex.Exposure.FormattedHandler
+
   @type exposure :: %Entitiex.Exposure{
     key: key(),
     attribute: attr(),

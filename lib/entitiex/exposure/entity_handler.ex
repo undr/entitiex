@@ -15,10 +15,8 @@ defmodule Entitiex.Exposure.EntityHandler do
 
   @spec setup(module(), Types.exp_opts()) :: {Types.handler(), Types.normal_exp_opts()} | nil
   def setup(_entity, opts) do
-    merge = Keyword.get(opts, :merge, false)
-
     case Keyword.fetch(opts, :using) do
-      {:ok, entity} -> {__MODULE__, [using: entity, merge: merge]}
+      {:ok, entity} -> {__MODULE__, [using: entity]}
       :error -> nil
     end
   end
