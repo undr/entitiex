@@ -240,7 +240,7 @@ Use :merge option to merge fields into the root map:
 ```elixir
 inline :company, merge: true do
   expose :name, as: :company_name
-  expose :email, as: :company_name
+  expose :email, as: :company_email
 end
 ```
 

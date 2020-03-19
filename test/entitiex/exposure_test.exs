@@ -24,6 +24,10 @@ defmodule Entitiex.ExposureTest do
     def attr_name_2(_, _) do
       "func with arity 2"
     end
+
+    def attr_name_3(_, _, _) do
+      "func with arity 3"
+    end
   end
 
   defmodule Test2Entity do
@@ -99,6 +103,11 @@ defmodule Entitiex.ExposureTest do
     @tag entity: Test1Entity, opts: [], key: :attr_name_2
     test "from entity function with arity 2", %{exposure: exposure} do
       assert(Exposure.value(exposure, %Test1{}) == {:put, "func with arity 2"})
+    end
+
+    @tag entity: Test1Entity, opts: [], key: :attr_name_3
+    test "from entity function with arity 3", %{exposure: exposure} do
+      assert(Exposure.value(exposure, %Test1{}, %{}) == {:put, "func with arity 3"})
     end
 
     @tag entity: Test1Entity, opts: [], key: nil

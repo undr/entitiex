@@ -36,14 +36,14 @@ defmodule Entitiex.Normalizer do
 
   defp normalize_type(:condition, condition, resolver) do
     cond do
-      Utils.func_exists?(resolver, condition, 1) ->
-        Function.capture(resolver, condition, 1)
-
       Utils.func_exists?(resolver, condition, 2) ->
         Function.capture(resolver, condition, 2)
 
+      Utils.func_exists?(resolver, condition, 3) ->
+        Function.capture(resolver, condition, 3)
+
       true ->
-        raise "Condition function is not found (#{inspect(resolver)}.#{condition}/2)"
+        raise "Condition function is not found (#{inspect(resolver)}.#{condition}/2 or #{inspect(resolver)}.#{condition}/3)"
     end
   end
 end

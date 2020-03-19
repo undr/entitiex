@@ -7,6 +7,11 @@ defmodule Entitiex.ConditionsTest do
     def should_expose?(_struct, value),
       do: "expose me" == value
 
+    def should_expose3?(_struct, _value, %{expose: expose}),
+      do: expose
+    def should_expose3?(_struct, _value, _context),
+      do: false
+
     def should_always_expose?(_struct, _value),
       do: true
   end
@@ -18,6 +23,7 @@ defmodule Entitiex.ConditionsTest do
     assert Conditions.compile(Test, [if: &Test.should_expose?/2]) == [&Conditions.expose_nil?/2, &Test.should_expose?/2]
     assert Conditions.compile(Test, [if: :should_expose?]) == [&Conditions.expose_nil?/2, &Test.should_expose?/2]
     assert Conditions.compile(Test, [if: :should_expose?, expose_nil: true]) == [&Test.should_expose?/2]
+    assert Conditions.compile(Test, [if: :should_expose3?, expose_nil: true]) == [&Test.should_expose3?/3]
   end
 
   test "run" do
@@ -25,5 +31,8 @@ defmodule Entitiex.ConditionsTest do
     refute Conditions.run([&Test.should_expose?/2], %{}, "do not expose me")
     refute Conditions.run([&Conditions.expose_nil?/2, &Test.should_always_expose?/2], %{}, nil)
     assert Conditions.run([&Conditions.expose_nil?/2, &Test.should_always_expose?/2], %{}, "expose me")
+    assert Conditions.run([&Test.should_expose3?/3], %{}, "anything", %{expose: true})
+    refute Conditions.run([&Test.should_expose3?/3], %{}, "anything", %{expose: false})
+    refute Conditions.run([&Test.should_expose3?/3], %{}, "anything", %{})
   end
 end
