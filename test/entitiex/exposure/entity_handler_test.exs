@@ -14,7 +14,7 @@ defmodule Entitiex.Exposure.EntityHandlerTest do
     test "when using option is defined" do
       exposure = %Entitiex.Exposure{opts: [using: Test]}
       assert(EntityHandler.value(exposure, nil) == nil)
-      assert(EntityHandler.value(exposure, %{}) == %{})
+      assert(EntityHandler.value(exposure, %{}) == %{x: nil, y: nil})
       assert(EntityHandler.value(exposure, %{x: "x", y: "y", z: "z"}) == %{x: "x", y: "y"})
       assert(EntityHandler.value(exposure, [%{x: "x", y: "y", z: "z"}]) == [%{x: "x", y: "y"}])
     end

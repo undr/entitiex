@@ -17,13 +17,14 @@ defmodule Entitiex.ConditionsTest do
   end
 
   test "compile" do
-    assert Conditions.compile(Test, []) == [&Conditions.expose_nil?/2]
+    assert Conditions.compile(Test, []) == []
     assert Conditions.compile(Test, [expose_nil: false]) == [&Conditions.expose_nil?/2]
     assert Conditions.compile(Test, [expose_nil: true]) == []
-    assert Conditions.compile(Test, [if: &Test.should_expose?/2]) == [&Conditions.expose_nil?/2, &Test.should_expose?/2]
-    assert Conditions.compile(Test, [if: :should_expose?]) == [&Conditions.expose_nil?/2, &Test.should_expose?/2]
-    assert Conditions.compile(Test, [if: :should_expose?, expose_nil: true]) == [&Test.should_expose?/2]
-    assert Conditions.compile(Test, [if: :should_expose3?, expose_nil: true]) == [&Test.should_expose3?/3]
+    assert Conditions.compile(Test, [if: &Test.should_expose?/2]) == [&Test.should_expose?/2]
+    assert Conditions.compile(Test, [if: :should_expose?]) == [&Test.should_expose?/2]
+    assert Conditions.compile(Test, [if: :should_expose?, expose_nil: false]) == [&Conditions.expose_nil?/2, &Test.should_expose?/2]
+    assert Conditions.compile(Test, [if: :should_expose3?]) == [&Test.should_expose3?/3]
+    assert Conditions.compile(Test, [if: :should_expose3?, expose_nil: false]) == [&Conditions.expose_nil?/2, &Test.should_expose3?/3]
   end
 
   test "run" do

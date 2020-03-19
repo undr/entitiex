@@ -36,6 +36,6 @@ defmodule Entitiex.Conditions do
   end
 
   defp expose_nil_func(opts) do
-    if Keyword.get(opts, :expose_nil, false), do: nil, else: &Entitiex.Conditions.expose_nil?/2
+    if Keyword.get(opts, :expose_nil, true), do: nil, else: &Entitiex.Conditions.expose_nil?/2
   end
 end

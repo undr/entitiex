@@ -7,6 +7,7 @@ defmodule Entitiex.MixProject do
       version: "0.1.0",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
+      aliases: aliases(),
       deps: deps()
     ]
   end
@@ -22,7 +23,13 @@ defmodule Entitiex.MixProject do
   defp deps do
     [
       {:timex, "~> 3.0"},
-      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev], runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev, :test], runtime: false}
+    ]
+  end
+
+  defp aliases do
+    [
+      test: ["dialyzer", "test"]
     ]
   end
 end
