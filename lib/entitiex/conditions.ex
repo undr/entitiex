@@ -23,8 +23,8 @@ defmodule Entitiex.Conditions do
     end)
   end
 
-  @spec expose_nil?(map(), any()) :: boolean()
-  def expose_nil?(_struct, value),
+  @spec not_nil?(map(), any()) :: boolean()
+  def not_nil?(_struct, value),
     do: !is_nil(value)
 
   defp get_conditions(entity, opts) do
@@ -36,6 +36,6 @@ defmodule Entitiex.Conditions do
   end
 
   defp expose_nil_func(opts) do
-    if Keyword.get(opts, :expose_nil, true), do: nil, else: &Entitiex.Conditions.expose_nil?/2
+    if Keyword.get(opts, :expose_nil, true), do: nil, else: &Entitiex.Conditions.not_nil?/2
   end
 end

@@ -46,7 +46,7 @@ defmodule Entitiex.EntityTest do
         },
         %Entitiex.Exposure{
           attribute: :attr2,
-          conditions: [&Entitiex.Conditions.expose_nil?/2],
+          conditions: [&Entitiex.Conditions.not_nil?/2],
           entity: Entitiex.EntityTest.TestEntity,
           handlers: [Entitiex.Exposure.DefaultHandler, Entitiex.Exposure.FormattedHandler],
           key: :attr2,
@@ -54,7 +54,7 @@ defmodule Entitiex.EntityTest do
         },
         %Entitiex.Exposure{
           attribute: :attr3,
-          conditions: [&Entitiex.Conditions.expose_nil?/2],
+          conditions: [&Entitiex.Conditions.not_nil?/2],
           entity: Entitiex.EntityTest.TestEntity,
           handlers: [Entitiex.Exposure.DefaultHandler, Entitiex.Exposure.FormattedHandler],
           key: :attr3,
@@ -62,7 +62,7 @@ defmodule Entitiex.EntityTest do
         },
         %Entitiex.Exposure{
           attribute: :attr4,
-          conditions: [&Entitiex.Conditions.expose_nil?/2, &Entitiex.EntityTest.TestEntity.should_expose?/2],
+          conditions: [&Entitiex.Conditions.not_nil?/2, &Entitiex.EntityTest.TestEntity.should_expose?/2],
           entity: Entitiex.EntityTest.TestEntity,
           handlers: [Entitiex.Exposure.DefaultHandler],
           key: :attr4,
