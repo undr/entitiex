@@ -109,8 +109,8 @@ As you can notice, it's possible to pass options into the `expose` macro — ful
 - `:format_key` - Apply formatters to key before exposing a value.
 - `:using` - Use another entity to represent a map or collection.
 - `:if` - Conditional exposure. Use `:if` to give condition functions, and then the field will only be exposed if each function returns `true`.
-- `:expose_nil` - Use this key to specify how `nil` values should be represented.
-- `:merge` - Merge nested entity into the root map.
+- `:expose_nil` - Use this key to specify how `nil` values should be represented. Default: `true`
+- `:merge` - Merge nested entity into the root map. Default: `false`
 
 #### Formatting Values And Keys
 
@@ -253,6 +253,21 @@ This will return something like:
 }
 ```
 
+#### `with_options` instruction
+
+It's possible to define default options for a block of expose/inline/nesting commands.
+
+```elixir
+with_options expose_nil: false, if: :is_admin? do
+  expose :email
+  expose [:balance, :rate], format: &Money.format/1
+  expose :timeline, using: TimelineItemEntity
+end
+```
+
+### Representation
+
+
 ## Examples
 
 ```elixir
@@ -378,6 +393,9 @@ UserEntity.represent(user, root: :data, extra: [meta: %{additional: "data"}])
 
 UserEntity.represent([user], root: :data, extra: [meta: %{additional: "data"}])
 # => %{"data" => [%{"id" => "1", ...}], "meta" => %{"additional" => "data"}}
+
+UserEntity.represent([user], root: :data, context: %{user: current_user})
+# => %{"data" => [%{"id" => "1", ...}]}
 ```
 
 Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_doc)
