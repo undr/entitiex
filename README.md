@@ -267,6 +267,16 @@ end
 
 ### Representation
 
+```elixir
+UserEntity.represent(user, root: :data, extra: [meta: %{additional: "data"}])
+# => %{"data" => %{"id" => "1", ...}, "meta" => %{"additional" => "data"}}
+
+UserEntity.represent([user], root: :data, extra: [meta: %{additional: "data"}])
+# => %{"data" => [%{"id" => "1", ...}], "meta" => %{"additional" => "data"}}
+
+UserEntity.represent([user], root: :data, context: %{user: current_user})
+# => %{"data" => [%{"id" => "1", ...}]}
+```
 
 ## Examples
 
