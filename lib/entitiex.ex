@@ -1,4 +1,5 @@
 defmodule Entitiex do
+  @spec default_formatters() :: [{atom(), fun()}]
   def default_formatters do
     [
       to_s: &Entitiex.Formatter.to_s/1,
