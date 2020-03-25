@@ -1,4 +1,14 @@
 defmodule Entitiex do
+  @moduledoc "README.md" |> File.read!() |> String.split("<!-- EXDOC -->") |> Enum.fetch!(1)
+
+  @doc """
+  It contains named formatters. It's possible to access them using the name.
+  Available formatters are: `:to_s`, `:to_atom`, `:upcase`, `:downcase`,
+  `:camelize`, `:lcamelize`.
+
+      iex> Entitiex.default_formatters() |> Keyword.fetch(:downcase)
+      {:ok, &Entitiex.Formatter.downcase/1}
+  """
   @spec default_formatters() :: [{atom(), fun()}]
   def default_formatters do
     [

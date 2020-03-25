@@ -1,4 +1,6 @@
 defmodule Entitiex.Utils do
+  @moduledoc false
+
   @type opts :: [{:deep, boolean()}]
 
   @spec transform_keys(Entitiex.Types.extra() | [Entitiex.Types.extra()], fun(), opts()) :: map()

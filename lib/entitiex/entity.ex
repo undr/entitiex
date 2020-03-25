@@ -1,4 +1,36 @@
 defmodule Entitiex.Entity do
+  @moduledoc """
+  Defines a entity module.
+
+  ## Example
+
+      defmodule UserEntity do
+        use Entitiex.Entity
+
+        expose [:first_name, :last_name], format: :to_s
+        expose :contacts, using: ContactEntity, if: :owner_is_admin?
+        expose [:registered_at, :updated_at], format: &DateTimeFormatter.format/1
+
+        def owner_is_admin?(_struct, _value, %{owner: %{admin: admin}}),
+          do: admin
+        def owner_is_admin?(_struct, _value, _context),
+          do: false
+      end
+
+  Entity module provides a `represent` function, which allow to transform given struct into new structure.
+
+      iex> UserEntity.represent(struct)
+      %{first_name: "...", ...}
+
+      iex> UserEntity.represent([struct])
+      [%{first_name: "...", ...}]
+
+      iex> UserEntity.represent(struct, root: :users, extra: [meta: %{}])
+      %{users: %{first_name: "...", ...}, meta: %{}}
+
+      iex> UserEntity.represent(struct, root: :users, context: [owner: %User{admin: true}])
+      %{users: %{first_name: "...", contacts: %{...}, ...}}
+  """
   alias Entitiex.Exposure
   alias Entitiex.Types
 
@@ -25,6 +57,38 @@ defmodule Entitiex.Entity do
 
       @before_compile unquote(__MODULE__)
 
+      @doc """
+      Transform a struct into the structure defined in the entity module.
+      It gives struct or list of structs as a first argument and options as a
+      second. The result can consist of two parts: inner and outer structure.
+      The inner structure is described in the entity module. The outer
+      structure exists only if `:root` option is defined and contains inner
+      structure under the root key and some additional data if `extra` option
+      is defined.
+
+      Inner:
+
+          %{name: "Jon Snow"}
+
+      Outer:
+
+          %{root_key: %{name: "Jon Snow"}}
+
+      Outer with extra:
+
+          %{root_key: %{name: "Jon Snow"}, meta: %{data: %{...}}}
+
+      Available options:
+
+        - `:root` - it allows us to define root key for final structure.
+        - `:extra` - it allows us to define extra structure which will be
+        merged into outer map. This option will be omitted if `:root` option is
+        not defined. That's because there is no outer structure without
+        `:root` option.
+        - `:context` - it allows us to define the context of the process of
+        representation. In other words, it allows setting runtime options for
+        the particular representation.
+      """
       def represent(struct, opts \\ [])
       def represent(structs, opts) when is_list(structs) do
         context = Keyword.get(opts, :context, %{})
@@ -49,6 +113,9 @@ defmodule Entitiex.Entity do
         |> Map.put(format_key(root), serializable_map(struct, context))
       end
 
+      @doc """
+      Transform a struct into the inner structure.
+      """
       def serializable_map(structs, context \\ %{})
       def serializable_map(structs, context) when is_list(structs),
         do: Enum.map(structs, fn (struct) -> serializable_map(struct, context) end)
@@ -182,12 +249,14 @@ defmodule Entitiex.Entity do
     end
   end
 
+  @doc false
   @spec reduce_options(module(), Types.exp_opts()) :: Types.exp_opts()
   def reduce_options(base, opts) do
     shared_opts = Module.get_attribute(base, :__shared_options__, [])
     Enum.reduce([opts|shared_opts], &Entitiex.Options.merge/2)
   end
 
+  @doc false
   @spec generate_module(module(), any(), any()) :: module()
   def generate_module(base, content, env) do
     index = base

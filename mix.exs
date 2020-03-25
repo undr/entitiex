@@ -4,7 +4,7 @@ defmodule Entitiex.MixProject do
   def project do
     [
       app: :entitiex,
-      version: "0.1.0",
+      version: "0.0.1",
       elixir: "~> 1.8",
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
@@ -30,16 +30,15 @@ defmodule Entitiex.MixProject do
   end
 
   defp description do
-    """
-    Entitiex is an Elixir presenter library used to transform data structures.
-    I'd say it's a kind of `Grape::Entity` ported from the Ruby world.
-    """
+    "Entitiex is an Elixir presenter library used to transform data structures. " <>
+    "I'd say it's a kind of `Grape::Entity` ported from the Ruby world."
   end
 
   # Run "mix help deps" to learn about dependencies.
   defp deps do
     [
-      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev, :test], runtime: false}
+      {:dialyxir, "~> 1.0.0-rc.7", only: [:dev, :test], runtime: false},
+      {:ex_doc, ">= 0.0.0", only: :dev, runtime: false}
     ]
   end
 

@@ -1,4 +1,6 @@
 defmodule Entitiex.Exposure do
+  @moduledoc false
+
   alias Entitiex.Exposure.EntityHandler
   alias Entitiex.Exposure.FormattedHandler
   alias Entitiex.Exposure.DefaultHandler

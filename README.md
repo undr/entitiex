@@ -1,9 +1,10 @@
 # Entitiex
 
-Entitiex is an Elixir presenter library used to transform data structures. This is useful when the desired representation doesn't match the schema defined within the domain model.  I'd say it's a kind of `Grape::Entity` ported from the Ruby world.
-
-
 Inspired by [`grape-entity`](https://github.com/ruby-grape/grape-entity) gem.
+
+<!-- EXDOC -->
+
+Entitiex is an Elixir presenter library used to transform data structures. This is useful when the desired representation doesn't match the schema defined within the domain model. I'd say it's a kind of `Grape::Entity` ported from the Ruby world.
 
 ## Installation
 
@@ -13,7 +14,7 @@ by adding `entitiex` to your list of dependencies in `mix.exs`:
 ```elixir
 def deps do
   [
-    {:entitiex, "~> 0.1.0"}
+    {:entitiex, "~> 0.0.1"}
   ]
 end
 ```

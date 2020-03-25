@@ -1,4 +1,6 @@
 defmodule Entitiex.Exposure.EntityHandler do
+  @moduledoc false
+
   use Entitiex.Exposure.Handler
 
   alias Entitiex.Exposure

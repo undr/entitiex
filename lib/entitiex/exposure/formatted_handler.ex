@@ -1,4 +1,6 @@
 defmodule Entitiex.Exposure.FormattedHandler do
+  @moduledoc false
+
   use Entitiex.Exposure.Handler
 
   alias Entitiex.Formatter

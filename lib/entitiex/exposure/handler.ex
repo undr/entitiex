@@ -1,4 +1,6 @@
 defmodule Entitiex.Exposure.Handler do
+  @moduledoc false
+
   defmacro __using__(_opts \\ []) do
     quote location: :keep do
       @behaviour Entitiex.Exposure.Handler

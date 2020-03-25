@@ -1,4 +1,6 @@
 defmodule Entitiex.Conditions do
+  @moduledoc false
+
   alias Entitiex.Types
 
   @spec compile(module(), Types.exp_opts()) :: Types.normal_funcs()

@@ -1,4 +1,6 @@
 defmodule Entitiex.Options do
+  @moduledoc false
+
   alias Entitiex.Types
 
   @merge [:format, :format_key, :if]

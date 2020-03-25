@@ -1,4 +1,6 @@
 defmodule Entitiex.Normalizer do
+  @moduledoc false
+
   alias Entitiex.Utils
   alias Entitiex.Types
 
