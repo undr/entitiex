@@ -279,6 +279,18 @@ UserEntity.represent([user], root: :data, context: %{user: current_user})
 # => %{"data" => [%{"id" => "1", ...}]}
 ```
 
+### Using with Phoenix
+
+```elixir
+def render("index.json", %{records: records, current_user: current_user}) do
+  RecordEntity.represent(records, root: :records, context: %{user: current_user})
+end
+
+def render("show.json", %{record: record, current_user: current_user}) do
+  RecordEntity.represent(record, root: :record, context: %{user: current_user})
+end
+```
+
 ## Examples
 
 ```elixir
